@@ -1,0 +1,79 @@
+.gitignore
+  s_23bb150dcf1824::t_f7d7919dcd7831 1-6
+.nvmrc
+  s_23bb150dcf1824::t_b1deab933b28d9 1
+LICENSE
+  s_23bb150dcf1824::t_6822bf068b48aa 1-21
+README.md
+  s_23bb150dcf1824::t_c55fa9a5259045 1-81
+api/mcp.test.ts
+  s_23bb150dcf1824::t_ef645709d62dce 1-59
+api/mcp.ts
+  s_23bb150dcf1824::t_b87d025389d2be 1-108
+bin/docs-mcp.ts
+  s_23bb150dcf1824::t_7fdcaf6d1040c2 1-230
+docs/auditing.md
+  s_23bb150dcf1824::t_a7a3b595160a97 1-46
+docs/getting-started.md
+  s_23bb150dcf1824::t_4076f2e9fcc90e 1-62
+docs/hosting.md
+  s_23bb150dcf1824::t_434c5d887112eb 1-45
+docs/index.md
+  s_23bb150dcf1824::t_2fc2af1ccb92bc 1-28
+docs/tools.md
+  s_23bb150dcf1824::t_6bc7fe922814d4 1-53
+eslint.config.mjs
+  s_23bb150dcf1824::t_d12b3a0a2eadec 1-19
+package.json
+  s_23bb150dcf1824::t_f97e612e0ef01c 1-48
+pnpm-lock.yaml
+  s_23bb150dcf1824::t_b8eff5071a1571 1-2144
+scripts/postbuild.mjs
+  s_23bb150dcf1824::t_df72b377522870 1-18
+scripts/run-tests.mjs
+  s_23bb150dcf1824::t_97824d2465f123 1-26
+src/audit.test.ts
+  s_23bb150dcf1824::t_c4d316d638802e 1-74
+src/audit.ts
+  s_23bb150dcf1824::t_4cf05bf157bbc3 1-198
+src/config.ts
+  s_23bb150dcf1824::t_2b0b983051910a 1-23
+src/markdown.test.ts
+  s_23bb150dcf1824::t_16a0991880025c 1-142
+src/markdown.ts
+  s_23bb150dcf1824::t_f3ad3cf5b8cf26 1-232
+src/server.test.ts
+  s_23bb150dcf1824::t_8554830d5e3e5c 1-97
+src/server.ts
+  s_23bb150dcf1824::t_d0b16d033507c1 1-66
+src/store.test.ts
+  s_23bb150dcf1824::t_7bf198199d6266 1-139
+src/store.ts
+  s_23bb150dcf1824::t_427a247569d9ca 1-326
+src/tools.ts
+  s_23bb150dcf1824::t_9a938af4d2564a 1-197
+src/types.ts
+  s_23bb150dcf1824::t_4a73093a8c1003 1-70
+tsconfig.build.json
+  s_23bb150dcf1824::t_5245b410928151 1-12
+tsconfig.json
+  s_23bb150dcf1824::t_c111890860b4e8 1-21
+vercel.json
+  s_23bb150dcf1824::t_912612da72fbdf 1-14
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "69785c044ac97df857533a32997af79b33ad3ac3",
+  "prompts": {},
+  "sessions": {
+    "s_23bb150dcf1824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7942db3a-3c26-43dc-a944-70995417930e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "GJ <info@gertjandewilde.com>"
+    }
+  }
+}
