@@ -1,0 +1,14 @@
+{
+  "framework": null,
+  "outputDirectory": ".",
+  "functions": {
+    "api/mcp.ts": {
+      "maxDuration": 60,
+      "includeFiles": "docs/**"
+    }
+  },
+  "rewrites": [
+    { "source": "/mcp", "destination": "/api/mcp" },
+    { "source": "/", "destination": "/api/mcp" }
+  ]
+}
