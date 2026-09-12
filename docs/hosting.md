@@ -30,6 +30,10 @@ Because the index is rebuilt on every deploy, the hosted docs are as fresh as th
 
 If the docs are in another repository, add a build step that clones or syncs them into `docs/` before the function bundles, or publish the docs as a package and copy them in `postinstall`.
 
+## Inside an existing Next.js site
+
+When the docs site already generates a Markdown mirror at build time, mount the handler there instead of running a second deployment. Import `createHttpHandler` and `DocStore` from `@apideck/docs-mcp` in a pages-router API route, point the store at the mirror directory, and add the directory to `experimental.outputFileTracingIncludes` in `next.config` so it ships with the function. If the site already serves an HTML page at the path you want, a middleware branch can rewrite non-GET requests to the API route while GET keeps rendering the page. The `metadata` option on `DocStore` accepts a lookup function so canonical URLs and descriptions can come from the site's own manifest rather than from frontmatter.
+
 ## Connecting clients to a hosted endpoint
 
 Claude Code:

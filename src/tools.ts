@@ -2,6 +2,7 @@
 
 import { z } from 'zod';
 
+import { sectionUrl } from './store.js';
 import type { DocStore } from './store.js';
 import type { AnyToolDefinition, DocPage, ToolDefinition, ToolResult } from './types.js';
 
@@ -139,7 +140,7 @@ export const createDocTools = (store: DocStore): AnyToolDefinition[] => {
           path: page.path,
           title: page.title,
           section: match.anchor,
-          ...(page.url !== undefined ? { url: `${page.url}#${match.anchor}` } : {}),
+          ...(page.url !== undefined ? { url: sectionUrl(page, match.anchor) } : {}),
           content: body,
         });
       }

@@ -20,9 +20,18 @@ import {
 } from './markdown.js';
 import type { DocPage, DocSection, SearchHit } from './types.js';
 
+/** Per-page overrides supplied by the host, e.g. from a build manifest. */
+export interface PageMetadata {
+  title?: string;
+  description?: string;
+  url?: string;
+}
+
 export interface DocStoreOptions {
   /** Directory holding the markdown docs. */
   root: string;
+  /** Resolve extra metadata for a page path (root-relative, no extension). Wins over frontmatter and `baseUrl`. */
+  metadata?: (docPath: string) => PageMetadata | undefined;
   /** Public site root used to build `url` fields, e.g. `https://docs.example.com`. */
   baseUrl?: string;
   extensions?: string[];
@@ -78,6 +87,13 @@ export const normalizePath = (ref: string): string =>
     .replace(/\.(mdx?|markdown)$/i, '')
     .replace(/\/+$/, '');
 
+/** URL for a section: page URL plus anchor, unless the page URL already carries a fragment (e.g. a Redoc deep link). */
+export const sectionUrl = (page: Pick<DocPage, 'url'>, anchor: string): string | undefined => {
+  if (page.url === undefined) return undefined;
+  if (anchor === '' || page.url.includes('#')) return page.url;
+  return `${page.url}#${anchor}`;
+};
+
 const stripSuffix = (s: string, suffixes: string[]): string => {
   for (const suffix of suffixes) {
     if (s.toLowerCase().endsWith(suffix.toLowerCase())) return s.slice(0, -suffix.length);
@@ -88,6 +104,7 @@ const stripSuffix = (s: string, suffixes: string[]): string => {
 export class DocStore {
   readonly root: string;
   readonly baseUrl: string | undefined;
+  private readonly metadata: ((docPath: string) => PageMetadata | undefined) | undefined;
   private readonly extensions: string[];
   private readonly ignore: Set<string>;
   private pagesByPath = new Map<string, DocPage>();
@@ -98,6 +115,7 @@ export class DocStore {
   constructor(opts: DocStoreOptions) {
     this.root = path.resolve(opts.root);
     this.baseUrl = opts.baseUrl?.replace(/\/+$/, '');
+    this.metadata = opts.metadata;
     this.extensions = (opts.extensions ?? DEFAULT_EXTENSIONS).map((e) =>
       e.startsWith('.') ? e.toLowerCase() : `.${e.toLowerCase()}`,
     );
@@ -161,9 +179,11 @@ export class DocStore {
     const docPath = normalizePath(rel);
     const { data, body } = parseFrontmatter(raw);
     const rawSections = splitSections(body);
-    const title = deriveTitle(data, rawSections, docPath);
-    const description = typeof data['description'] === 'string' ? data['description'] : undefined;
-    const url = this.urlFor(docPath, data);
+    const meta = this.metadata?.(docPath) ?? {};
+    const title = meta.title ?? deriveTitle(data, rawSections, docPath);
+    const description =
+      meta.description ?? (typeof data['description'] === 'string' ? data['description'] : undefined);
+    const url = meta.url ?? this.urlFor(docPath, data);
 
     const sections: DocSection[] = rawSections.map((s) => ({
       id: s.level === 0 ? docPath : `${docPath}#${s.anchor}`,
@@ -278,7 +298,7 @@ export class DocStore {
       counts.set(docPath, seen + 1);
       const page = this.pagesByPath.get(docPath);
       const anchor = r['anchor'] as string;
-      const url = page?.url !== undefined ? `${page.url}${anchor ? `#${anchor}` : ''}` : undefined;
+      const url = page ? sectionUrl(page, anchor) : undefined;
       hits.push({
         path: docPath,
         title: r['title'] as string,

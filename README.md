@@ -2,7 +2,7 @@
 
 An MCP server that lets AI agents search and read your documentation at query time, instead of relying on stale training data. Point it at a folder of Markdown and it exposes `search_docs`, `get_doc` and `list_docs` over stdio (for Claude Code, Cursor, Claude Desktop) and over Streamable HTTP (for a hosted, public endpoint like OpenAI's Docs MCP or the Microsoft Learn MCP Server).
 
-The `docs/` folder in this repo is both the sample content and the server's own documentation. Start there: [docs/index.md](docs/index.md).
+Published as `@apideck/docs-mcp`. It runs as a standalone CLI, a Vercel function, or as a library inside an existing Node or Next.js site. The `docs/` folder in this repo is both the sample content and the server's own documentation. Start there: [docs/index.md](docs/index.md).
 
 ## Quick start
 
@@ -57,6 +57,25 @@ Every page is also an MCP resource at `docs://<path>`. Full reference: [docs/too
 ## Hosting on Vercel
 
 `api/mcp.ts` is a stateless Streamable HTTP function; `vercel.json` rewrites `/mcp` to it and bundles `docs/**` with the function. Set `DOCS_BASE_URL` and `DOCS_ABOUT` in the project environment and deploy. Details in [docs/hosting.md](docs/hosting.md).
+
+## Use as a library
+
+Mount the handler inside a site that already builds its docs, so the endpoint lives next to them. A Next.js pages-router API route:
+
+```ts
+// src/pages/api/mcp.ts
+import { createHttpHandler, DocStore } from '@apideck/docs-mcp'
+import type { NextApiRequest, NextApiResponse } from 'next'
+import path from 'path'
+
+const store = new DocStore({ root: path.join(process.cwd(), 'public', 'md'), baseUrl: 'https://docs.example.com' })
+const handler = createHttpHandler({ store, name: 'example-docs', about: 'the Example API documentation' })
+
+export const config = { maxDuration: 60, api: { responseLimit: false } }
+export default (req: NextApiRequest, res: NextApiResponse) => handler(req, res)
+```
+
+Add `experimental.outputFileTracingIncludes: { '/api/mcp': ['./public/md/**/*'] }` to `next.config` so the markdown ships with the function on Vercel. `DocStore` also takes a `metadata(path)` hook to supply titles, descriptions and canonical URLs from a build manifest. Exports: `DocStore`, `createServer`, `createHttpHandler`, `createDocTools`, `auditDocs`, `formatAuditReport`.
 
 ## Development
 

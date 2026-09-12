@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { after, before, describe, it } from 'node:test';
 
-import { DocStore, normalizePath, tokenize } from './store.js';
+import { DocStore, normalizePath, sectionUrl, tokenize } from './store.js';
 
 const DOCS = path.resolve('docs');
 
@@ -135,5 +135,28 @@ describe('tokenize', () => {
       'v2',
       '1',
     ]);
+  });
+});
+
+describe('DocStore metadata hook', () => {
+  it('lets the host override title, description and url per page', async () => {
+    const store = new DocStore({
+      root: DOCS,
+      baseUrl: 'https://example.com',
+      metadata: (p) =>
+        p === 'tools' ? { title: 'Tool reference', description: 'From manifest', url: 'https://example.com/ref#tools' } : undefined,
+    });
+    await store.load();
+    const page = store.get('tools');
+    assert.equal(page?.title, 'Tool reference');
+    assert.equal(page?.description, 'From manifest');
+    assert.equal(page?.url, 'https://example.com/ref#tools');
+    // A page URL that already has a fragment is not given a second one.
+    assert.equal(store.search('search_docs')[0]?.url, 'https://example.com/ref#tools');
+    assert.equal(sectionUrl({ url: 'https://example.com/a' }, 'x'), 'https://example.com/a#x');
+    assert.equal(sectionUrl({ url: 'https://example.com/a' }, ''), 'https://example.com/a');
+    assert.equal(sectionUrl({}, 'x'), undefined);
+    assert.equal(store.get('hosting')?.url, 'https://example.com/hosting');
+    assert.equal(store.search('search_docs')[0]?.title, 'Tool reference');
   });
 });

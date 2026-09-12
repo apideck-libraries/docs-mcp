@@ -1,12 +1,32 @@
 {
-  "name": "docs-mcp",
+  "name": "@apideck/docs-mcp",
   "version": "0.1.0",
   "description": "MCP server that lets agents search and retrieve your documentation at query time instead of relying on stale training data.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "documentation",
+    "search",
+    "agents"
+  ],
   "type": "module",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apideck-libraries/docs-mcp.git"
+  },
   "packageManager": "pnpm@9.15.4",
   "engines": {
     "node": ">=20"
+  },
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/src/index.d.ts",
+      "import": "./dist/src/index.js"
+    },
+    "./package.json": "./package.json"
   },
   "bin": {
     "docs-mcp": "dist/bin/docs-mcp.js"
@@ -16,6 +36,9 @@
     "README.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "postbuild": "node scripts/postbuild.mjs",
