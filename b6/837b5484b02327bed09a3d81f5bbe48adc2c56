@@ -1,0 +1,39 @@
+src/store.test.ts
+  s_23bb150dcf1824::t_9ab14109524ecf 9,154-158
+  s_23bb150dcf1824::t_97dcaf2b8859d9 140-153,159-162
+src/index.ts
+  s_23bb150dcf1824::t_97dcaf2b8859d9 1-2,4-14
+  s_23bb150dcf1824::t_9ab14109524ecf 3
+src/store.ts
+  s_23bb150dcf1824::t_9ab14109524ecf 90-96,301
+  s_23bb150dcf1824::t_97dcaf2b8859d9 23-29,33-34,107,118,182-186
+README.md
+  s_23bb150dcf1824::t_9ab14109524ecf 5,61-78
+  s_23bb150dcf1824::t_e8e3c49e25156b 79
+src/http.ts
+  s_23bb150dcf1824::t_97dcaf2b8859d9 1-106
+api/mcp.ts
+  s_23bb150dcf1824::t_97dcaf2b8859d9 4-6,10-11,22,33-42
+package.json
+  s_23bb150dcf1824::t_97dcaf2b8859d9 2,5-11,14-17,22-30,39-41
+src/tools.ts
+  s_23bb150dcf1824::t_9ab14109524ecf 5,143
+docs/hosting.md
+  s_23bb150dcf1824::t_9ab14109524ecf 33-36
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "b6837b5484b02327bed09a3d81f5bbe48adc2c56",
+  "prompts": {},
+  "sessions": {
+    "s_23bb150dcf1824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7942db3a-3c26-43dc-a944-70995417930e",
+        "model": "claude-fable-5-1"
+      },
+      "human_author": "GJ <info@gertjandewilde.com>"
+    }
+  }
+}
