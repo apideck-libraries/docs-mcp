@@ -6,13 +6,16 @@ import { sectionUrl } from './store.js';
 import type { DocStore } from './store.js';
 import type { AnyToolDefinition, DocPage, ToolDefinition, ToolResult } from './types.js';
 
-const READ_ONLY = { readOnlyHint: true, idempotentHint: true, openWorldHint: false } as const;
+export const READ_ONLY = { readOnlyHint: true, idempotentHint: true, openWorldHint: false } as const;
 
-const text = (body: string, structured?: Record<string, unknown>, isError = false): ToolResult => ({
+/** Build a tool result: text for the model plus optional structured content, for reuse by host-defined tools. */
+export const toolResult = (body: string, structured?: Record<string, unknown>, isError = false): ToolResult => ({
   content: [{ type: 'text', text: body }],
   ...(structured !== undefined ? { structuredContent: structured } : {}),
   ...(isError ? { isError: true } : {}),
 });
+
+const text = toolResult;
 
 const isoDate = (d: Date): string => d.toISOString().slice(0, 10);
 
@@ -50,11 +53,15 @@ const getSchema = {
   path: z
     .string()
     .min(1)
-    .describe('Page path from search_docs or list_docs, e.g. "guides/getting-started". Extensions and "docs://" prefix are accepted.'),
+    .describe(
+      'Page path from search_docs or list_docs, e.g. "guides/getting-started" (extensions and "docs://" prefix are accepted), or a full https:// URL to the page, optionally with a #fragment.',
+    ),
   section: z
     .string()
     .optional()
-    .describe('Return only this section: an anchor ("#install" or "install") or the heading text.'),
+    .describe(
+      'Return only this section: an anchor ("#install" or "install") or the heading text. Defaults to the #fragment of `path` when `path` is a URL.',
+    ),
 };
 
 const listSchema = {
@@ -103,46 +110,59 @@ export const createDocTools = (store: DocStore): AnyToolDefinition[] => {
     inputSchema: getSchema,
     annotations: READ_ONLY,
     handler: async ({ path, section }) => {
-      const page = store.get(path);
+      const isUrl = /^https?:\/\//i.test(path);
+      const resolved = isUrl ? store.getByUrl(path) : undefined;
+      const page = resolved?.page ?? (isUrl ? undefined : store.get(path));
       if (!page) {
-        const suggestions = store.search(path.replace(/[/#._-]+/g, ' '), { limit: 5, perPage: 1 });
+        const suggestions = isUrl
+          ? []
+          : store.search(path.replace(/[/#._-]+/g, ' '), { limit: 5, perPage: 1 });
         const hint =
           suggestions.length > 0
             ? `\n\nDid you mean:\n${suggestions.map((s) => `- ${s.path} (${s.title})`).join('\n')}`
             : '';
         return text(`No page at "${path}".${hint}`, { path, found: false }, true);
       }
+      // An explicit `section` argument must resolve or the call errors. A
+      // section implied only by the URL's #fragment is best-effort: some
+      // fragments are page-relative UI state rather than a heading (or the
+      // page's own URL already carries a fragment, e.g. a Redoc deep link),
+      // so a miss there falls through to the whole page instead of erroring.
+      const explicitSection = section?.trim();
+      const effectiveSection = explicitSection || resolved?.anchor;
 
-      if (section !== undefined && section.trim() !== '') {
-        const wanted = section.trim().replace(/^#/, '').toLowerCase();
+      if (effectiveSection !== undefined && effectiveSection !== '') {
+        const wanted = effectiveSection.replace(/^#/, '').toLowerCase();
         const match = page.sections.find(
           (s) => s.level > 0 && (s.anchor.toLowerCase() === wanted || s.heading.toLowerCase() === wanted),
         );
-        if (!match) {
+        if (!match && explicitSection) {
           return text(
-            `No section "${section}" in ${page.path}. Available sections:\n${sectionOutline(page) || '(none)'}`,
+            `No section "${explicitSection}" in ${page.path}. Available sections:\n${sectionOutline(page) || '(none)'}`,
             { path: page.path, found: false },
             true,
           );
         }
-        // Include nested sub-sections so the caller gets the whole subtree.
-        const start = page.sections.indexOf(match);
-        const subtree = [match];
-        for (let i = start + 1; i < page.sections.length; i += 1) {
-          const s = page.sections[i];
-          if (!s || s.level <= match.level) break;
-          subtree.push(s);
+        if (match) {
+          // Include nested sub-sections so the caller gets the whole subtree.
+          const start = page.sections.indexOf(match);
+          const subtree = [match];
+          for (let i = start + 1; i < page.sections.length; i += 1) {
+            const s = page.sections[i];
+            if (!s || s.level <= match.level) break;
+            subtree.push(s);
+          }
+          const body = subtree
+            .map((s) => `${'#'.repeat(s.level)} ${s.heading}\n\n${s.content}`.trimEnd())
+            .join('\n\n');
+          return text(`${pageHeader(page)}\nsection: #${match.anchor}\n\n---\n\n${body}`, {
+            path: page.path,
+            title: page.title,
+            section: match.anchor,
+            ...(page.url !== undefined ? { url: sectionUrl(page, match.anchor) } : {}),
+            content: body,
+          });
         }
-        const body = subtree
-          .map((s) => `${'#'.repeat(s.level)} ${s.heading}\n\n${s.content}`.trimEnd())
-          .join('\n\n');
-        return text(`${pageHeader(page)}\nsection: #${match.anchor}\n\n---\n\n${body}`, {
-          path: page.path,
-          title: page.title,
-          section: match.anchor,
-          ...(page.url !== undefined ? { url: sectionUrl(page, match.anchor) } : {}),
-          content: body,
-        });
       }
 
       const outline = sectionOutline(page);

@@ -1,6 +1,6 @@
 {
   "name": "@apideck/docs-mcp",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "MCP server that lets agents search and retrieve your documentation at query time instead of relying on stale training data.",
   "keywords": [
     "mcp",

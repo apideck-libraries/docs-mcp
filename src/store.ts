@@ -108,6 +108,7 @@ export class DocStore {
   private readonly extensions: string[];
   private readonly ignore: Set<string>;
   private pagesByPath = new Map<string, DocPage>();
+  private pagesByUrl = new Map<string, DocPage>();
   private index: MiniSearch<DocSection> | null = null;
   private indexedAt: Date | null = null;
   private loading: Promise<void> | null = null;
@@ -154,6 +155,7 @@ export class DocStore {
     index.addAll(pages.flatMap((p) => p.sections));
 
     this.pagesByPath = new Map(pages.map((p) => [p.path, p]));
+    this.pagesByUrl = new Map(pages.filter((p) => p.url !== undefined).map((p) => [p.url as string, p]));
     this.index = index;
     this.indexedAt = new Date();
   }
@@ -258,6 +260,28 @@ export class DocStore {
       if (key.toLowerCase() === lower) return page;
     }
     return undefined;
+  }
+
+  /**
+   * Resolve a page by its public URL (as configured via `baseUrl` or the
+   * `metadata` hook), tolerating a trailing slash and a `#fragment`. Returns
+   * the page plus the fragment as a candidate section anchor, when the URL's
+   * own fragment isn't already baked into the page's stored URL (e.g. a
+   * Redoc deep link) — matching that case would strip a fragment the page
+   * actually needs.
+   */
+  getByUrl(url: string): { page: DocPage; anchor?: string } | undefined {
+    this.ensureLoaded();
+    const trimmed = url.trim().replace(/\/(?=(?:#|$))/, '');
+    const direct = this.pagesByUrl.get(trimmed);
+    if (direct) return { page: direct };
+    const hashIndex = trimmed.indexOf('#');
+    if (hashIndex === -1) return undefined;
+    const withoutFragment = trimmed.slice(0, hashIndex);
+    const page = this.pagesByUrl.get(withoutFragment);
+    if (!page) return undefined;
+    const anchor = trimmed.slice(hashIndex + 1);
+    return anchor === '' ? { page } : { page, anchor };
   }
 
   /** Resolve a relative link from `fromPath` to a page in the store. */

@@ -6,9 +6,12 @@ import { after, before, describe, it } from 'node:test';
 
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { z } from 'zod';
 
 import { createServer } from './server.js';
 import { DocStore } from './store.js';
+import { toolResult } from './tools.js';
+import type { AnyToolDefinition } from './types.js';
 
 const textOf = (result: unknown): string => {
   const content = (result as { content?: Array<{ type: string; text?: string }> }).content;
@@ -78,6 +81,29 @@ describe('MCP server over in-memory transport', () => {
     assert.match(textOf(result), /Did you mean:[\s\S]*hosting/);
   });
 
+  it('get_doc resolves a full URL, using its #fragment as the section', async () => {
+    const result = await client.callTool({
+      name: 'get_doc',
+      arguments: { path: 'https://example.com/hosting#vercel' },
+    });
+    assert.notEqual(result.isError, true);
+    const text = textOf(result);
+    assert.match(text, /section: #vercel/);
+    assert.match(text, /## Vercel/);
+  });
+
+  it('get_doc falls back to the whole page when a URL fragment matches no heading', async () => {
+    const result = await client.callTool({ name: 'get_doc', arguments: { path: 'https://example.com/hosting#nope' } });
+    assert.notEqual(result.isError, true);
+    assert.match(textOf(result), /## Local HTTP/);
+  });
+
+  it('get_doc returns an error for an unknown URL, without frontmatter-style suggestions', async () => {
+    const result = await client.callTool({ name: 'get_doc', arguments: { path: 'https://example.com/nope' } });
+    assert.equal(result.isError, true);
+    assert.doesNotMatch(textOf(result), /Did you mean/);
+  });
+
   it('list_docs lists pages under a prefix', async () => {
     const all = await client.callTool({ name: 'list_docs', arguments: {} });
     assert.match(textOf(all), /- getting-started: Getting started — /);
@@ -93,5 +119,35 @@ describe('MCP server over in-memory transport', () => {
     const first = read.contents[0] as { mimeType?: string; text?: string };
     assert.equal(first.mimeType, 'text/markdown');
     assert.match(first.text ?? '', /^# Getting started/);
+  });
+});
+
+describe('MCP server with host-defined extraTools', () => {
+  it('registers extra tools alongside the built-ins and mentions them in the instructions', async () => {
+    const store = new DocStore({ root: path.resolve('docs') });
+    await store.load();
+    const echo: AnyToolDefinition = {
+      name: 'echo_thing',
+      title: 'Echo thing',
+      description: 'Echoes its input.',
+      inputSchema: { value: z.string() },
+      annotations: { readOnlyHint: true },
+      handler: async (args: Record<string, unknown>) => toolResult(`echo: ${String(args['value'])}`, args),
+    };
+    const server = createServer({ store, about: 'test docs', extraTools: [echo] });
+    const client = new Client({ name: 'extra-tools-client', version: '0.0.0' });
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+
+    assert.match(client.getInstructions() ?? '', /Additional tools for this documentation set: echo_thing\./);
+    const { tools } = await client.listTools();
+    assert.deepEqual(
+      tools.map((t) => t.name).sort(),
+      ['echo_thing', 'get_doc', 'list_docs', 'search_docs'],
+    );
+    const result = await client.callTool({ name: 'echo_thing', arguments: { value: 'hi' } });
+    assert.equal(textOf(result), 'echo: hi');
+    await client.close();
   });
 });

@@ -13,6 +13,7 @@ import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/
 
 import { createServer } from './server.js';
 import type { DocStore } from './store.js';
+import type { AnyToolDefinition } from './types.js';
 
 export interface HttpHandlerOptions {
   /** Store to serve, or a function returning one (called per request, so it can lazy-load and cache). */
@@ -21,6 +22,13 @@ export interface HttpHandlerOptions {
   version?: string;
   /** One-line description of what the docs cover, shown to agents and in the GET summary. */
   about?: string;
+  /**
+   * Extra tools registered alongside search_docs/get_doc/list_docs, or a
+   * function returning them (called per request, so it can depend on the
+   * same lazily-loaded data as a `store` function). See
+   * `CreateServerOptions.extraTools`.
+   */
+  extraTools?: AnyToolDefinition[] | (() => Promise<AnyToolDefinition[]>);
   /** Extra fields merged into the GET summary. */
   info?: Record<string, unknown>;
   /** Set to false to skip CORS headers (e.g. when a gateway adds them). Default true. */
@@ -50,6 +58,11 @@ export const createHttpHandler = (opts: HttpHandlerOptions): NodeHandler => {
     return opts.store;
   };
 
+  const getExtraTools = async (): Promise<AnyToolDefinition[]> => {
+    if (!opts.extraTools) return [];
+    return typeof opts.extraTools === 'function' ? opts.extraTools() : opts.extraTools;
+  };
+
   return async (req, res) => {
     if (opts.cors !== false) for (const [k, v] of CORS_HEADERS) res.setHeader(k, v);
     const method = req.method ?? 'GET';
@@ -70,11 +83,12 @@ export const createHttpHandler = (opts: HttpHandlerOptions): NodeHandler => {
 
     if (method === 'GET') {
       const stats = store.stats();
+      const extraTools = await getExtraTools();
       json(res, 200, {
         name: opts.name ?? 'docs-mcp',
         description: opts.about ?? 'Read-only MCP server over a documentation set.',
         transport: 'streamable-http',
-        tools: ['search_docs', 'get_doc', 'list_docs'],
+        tools: ['search_docs', 'get_doc', 'list_docs', ...extraTools.map((t) => t.name)],
         pages: stats.pages,
         sections: stats.sections,
         indexed_at: stats.indexedAt?.toISOString() ?? null,
@@ -89,11 +103,13 @@ export const createHttpHandler = (opts: HttpHandlerOptions): NodeHandler => {
       return;
     }
 
+    const extraTools = await getExtraTools();
     const server = createServer({
       store,
       ...(opts.name !== undefined ? { name: opts.name } : {}),
       ...(opts.version !== undefined ? { version: opts.version } : {}),
       ...(opts.about !== undefined ? { about: opts.about } : {}),
+      ...(extraTools.length > 0 ? { extraTools } : {}),
     });
     const transport = (opts.transportFactory ?? (() => new StreamableHTTPServerTransport({})))();
     res.on('close', () => {

@@ -28,8 +28,8 @@ Return the full Markdown of one page, or one section of it.
 
 | Argument | Type | Description |
 | --- | --- | --- |
-| `path` | string | Page path as returned by `search_docs` or `list_docs`. Extensions, a leading `./` and a `docs://` prefix are all accepted. |
-| `section` | string | Optional. An anchor such as `#install` or the heading text. Returns that heading and everything nested under it. |
+| `path` | string | Page path as returned by `search_docs` or `list_docs` (extensions, a leading `./` and a `docs://` prefix are all accepted), or a full `https://` URL to the page, optionally with a `#fragment`. |
+| `section` | string | Optional. An anchor such as `#install` or the heading text. Returns that heading and everything nested under it. Defaults to the URL's `#fragment` when `path` is a URL. |
 
 The response starts with a short header (title, path, URL, last-modified date, word count) and an outline of section anchors, followed by the Markdown body. When a path does not resolve, the tool returns an error with up to five suggested paths.
 
@@ -47,6 +47,33 @@ Use it to browse structure when a search comes back empty, or to enumerate every
 ## The docs:// resource
 
 Every page is also published as an MCP resource with the URI `docs://<path>` and MIME type `text/markdown`. Clients that support resources can attach a page to a conversation directly without calling a tool.
+
+## Fetching by URL
+
+`get_doc` also accepts a page's full public URL in `path`, so an agent that already has a link — from a search result, a citation, or a page it read earlier — can fetch it without converting to a path first. A `#fragment` on the URL is used as the section when `section` isn't given explicitly; if the fragment doesn't match a heading, the tool falls back to the whole page instead of erroring, since the fragment might be page UI state rather than a real anchor.
+
+## Extending the server with host-specific tools
+
+`createServer` and `createHttpHandler` accept `extraTools`, a list of tool definitions (or, for `createHttpHandler`, a function returning one — useful when the tools need the same async setup as the store) registered alongside the three built-ins. Build one with the exported `toolResult(text, structured?, isError?)` helper and the `AnyToolDefinition` type, so the result shape matches `search_docs`/`get_doc`/`list_docs`:
+
+```ts
+import { createHttpHandler, DocStore, toolResult } from '@apideck/docs-mcp'
+import type { AnyToolDefinition } from '@apideck/docs-mcp'
+import { z } from 'zod'
+
+const changelogTool: AnyToolDefinition = {
+  name: 'get_latest_release',
+  title: 'Get latest release',
+  description: 'Return the most recent changelog entry.',
+  inputSchema: { product: z.string().optional() },
+  annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: false },
+  handler: async (args) => toolResult(await fetchLatestRelease(args.product))
+}
+
+const handler = createHttpHandler({ store, extraTools: [changelogTool] })
+```
+
+Reach for this when the docs already carry structured data a plain search won't surface well: an API operation index, a connector coverage matrix, a changelog. The tool names are appended to the server's `instructions` automatically.
 
 ## Path rules
 

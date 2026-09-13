@@ -49,7 +49,7 @@ Shared flags: `--docs`, `--base-url`, `--about`, `--name`. Each falls back to `D
 ## Tools
 
 - `search_docs(query, limit?, path_prefix?)`: heading-level full-text search with title and heading boosts, prefix and fuzzy matching, and at most three hits per page.
-- `get_doc(path, section?)`: full page markdown with a header and section outline, or one section and its sub-sections.
+- `get_doc(path, section?)`: full page markdown with a header and section outline, or one section and its sub-sections. `path` also accepts a full URL.
 - `list_docs(path_prefix?, limit?)`: pages with title, description, word count and last-modified date.
 
 Every page is also an MCP resource at `docs://<path>`. Full reference: [docs/tools.md](docs/tools.md).
@@ -75,7 +75,7 @@ export const config = { maxDuration: 60, api: { responseLimit: false } }
 export default (req: NextApiRequest, res: NextApiResponse) => handler(req, res)
 ```
 
-Add `experimental.outputFileTracingIncludes: { '/api/mcp': ['./public/md/**/*'] }` to `next.config` so the markdown ships with the function on Vercel. `DocStore` also takes a `metadata(path)` hook to supply titles, descriptions and canonical URLs from a build manifest. Exports: `DocStore`, `createServer`, `createHttpHandler`, `createDocTools`, `auditDocs`, `formatAuditReport`.
+Add `experimental.outputFileTracingIncludes: { '/api/mcp': ['./public/md/**/*'] }` to `next.config` so the markdown ships with the function on Vercel. `DocStore` also takes a `metadata(path)` hook to supply titles, descriptions and canonical URLs from a build manifest, and `get_doc` accepts a full URL as well as a path. Pass `extraTools` to `createServer`/`createHttpHandler` to add host-specific tools (an API operation index, a coverage matrix, ...) alongside the three built-ins — see [docs/tools.md](docs/tools.md#extending-the-server-with-host-specific-tools). Exports: `DocStore`, `createServer`, `createHttpHandler`, `createDocTools`, `toolResult`, `auditDocs`, `formatAuditReport`.
 
 ## Development
 

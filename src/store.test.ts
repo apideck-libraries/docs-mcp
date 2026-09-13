@@ -50,6 +50,16 @@ describe('DocStore over the bundled docs', () => {
     assert.equal(store.resolveLink('index', '../outside.md'), undefined);
   });
 
+  it('resolves pages by their public URL, with or without a fragment', () => {
+    assert.equal(store.getByUrl('https://example.com/tools')?.page.path, 'tools');
+    assert.equal(store.getByUrl('https://example.com/tools/')?.page.path, 'tools');
+    const withAnchor = store.getByUrl('https://example.com/tools#get_doc');
+    assert.equal(withAnchor?.page.path, 'tools');
+    assert.equal(withAnchor?.anchor, 'get_doc');
+    assert.equal(store.getByUrl('https://example.com/tools#')?.anchor, undefined);
+    assert.equal(store.getByUrl('https://example.com/nope'), undefined);
+  });
+
   it('searches with heading boosts and page dedup', () => {
     const hits = store.search('search_docs', { limit: 5 });
     assert.ok(hits.length > 0);
@@ -153,6 +163,10 @@ describe('DocStore metadata hook', () => {
     assert.equal(page?.url, 'https://example.com/ref#tools');
     // A page URL that already has a fragment is not given a second one.
     assert.equal(store.search('search_docs')[0]?.url, 'https://example.com/ref#tools');
+    // getByUrl matches the exact (already-anchored) URL directly, rather than
+    // splitting off "tools" as if it were a section fragment to look up.
+    assert.equal(store.getByUrl('https://example.com/ref#tools')?.page.path, 'tools');
+    assert.equal(store.getByUrl('https://example.com/ref#tools')?.anchor, undefined);
     assert.equal(sectionUrl({ url: 'https://example.com/a' }, 'x'), 'https://example.com/a#x');
     assert.equal(sectionUrl({ url: 'https://example.com/a' }, ''), 'https://example.com/a');
     assert.equal(sectionUrl({}, 'x'), undefined);
