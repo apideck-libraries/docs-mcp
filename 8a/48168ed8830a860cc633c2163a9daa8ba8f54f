@@ -1,0 +1,58 @@
+README.md
+  s_23bb150dcf1824::t_e5b655a436b84b 52,78
+src/http.ts
+  s_23bb150dcf1824::t_973c93f07bd552 86,91
+  s_23bb150dcf1824::t_b5243a0d37fabe 61-65
+  s_23bb150dcf1824::t_b802273d167cc9 16
+  s_23bb150dcf1824::t_65485e2674b8f3 106,112
+  s_23bb150dcf1824::t_e5adb70b769e8a 25-31
+src/http.test.ts
+  s_23bb150dcf1824::t_838b7b94289d5c 1-70
+src/server.ts
+  s_23bb150dcf1824::t_db1f18500ddb54 7,15-21,24,30-35
+  s_23bb150dcf1824::t_43c34abb4f0e5a 38,41,44
+src/index.ts
+  s_23bb150dcf1824::t_d335dc17466822 9,14
+src/tools.ts
+  s_23bb150dcf1824::t_d5822b9c72f8a6 113-115,117-119,134-135
+  s_23bb150dcf1824::t_d8488f0162db41 147-164
+  s_23bb150dcf1824::t_3ce872a5629be9 9,11-12,18
+  s_23bb150dcf1824::t_03efe861132980 56-58,62-64
+  s_23bb150dcf1824::t_970809f1f1714a 126-132,139,141,146
+  s_23bb150dcf1824::t_ac573ead961416 19
+src/store.test.ts
+  s_23bb150dcf1824::t_37c25fedd3f1b2 166-169
+  s_23bb150dcf1824::t_635dc675a31f32 53-62
+src/server.test.ts
+  s_23bb150dcf1824::t_226f27e279b57f 124-132,134,136-153
+  s_23bb150dcf1824::t_b694bf13c40460 9
+  s_23bb150dcf1824::t_0bda6dc0b49733 133
+  s_23bb150dcf1824::t_679979cf577cde 135
+  s_23bb150dcf1824::t_06f163430aa8ce 13-14
+  s_23bb150dcf1824::t_4d133e41f8db8c 84-106
+package.json
+  s_23bb150dcf1824::t_76f01feff5ffe4 3
+docs/tools.md
+  s_23bb150dcf1824::t_e5b655a436b84b 31-32,51-76
+  s_23bb150dcf1824::t_af5e434adf9bd9 77
+src/store.ts
+  s_23bb150dcf1824::t_db09143c924ae6 111
+  s_23bb150dcf1824::t_d9b012882d11fe 158
+  s_23bb150dcf1824::t_722f058877c010 265-286
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.4",
+  "base_commit_sha": "8a48168ed8830a860cc633c2163a9daa8ba8f54f",
+  "prompts": {},
+  "sessions": {
+    "s_23bb150dcf1824": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "7942db3a-3c26-43dc-a944-70995417930e",
+        "model": "claude-sonnet-5"
+      },
+      "human_author": "GJ <info@gertjandewilde.com>"
+    }
+  }
+}
