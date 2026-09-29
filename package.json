@@ -34,6 +34,7 @@
   "files": [
     "dist/",
     "README.md",
+    "docs/migrating-to-sdk-v2.md",
     "LICENSE"
   ],
   "publishConfig": {
