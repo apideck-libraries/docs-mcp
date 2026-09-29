@@ -53,7 +53,6 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.29.0",
     "@stricli/core": "^1.2.6",
-    "@vercel/functions": "^3.4.4",
     "js-yaml": "^4.1.1",
     "minisearch": "^7.2.0",
     "zod": "^4.0.0"
