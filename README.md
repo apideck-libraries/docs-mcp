@@ -77,12 +77,18 @@ export default (req: NextApiRequest, res: NextApiResponse) => handler(req, res)
 
 Add `experimental.outputFileTracingIncludes: { '/api/mcp': ['./public/md/**/*'] }` to `next.config` so the markdown ships with the function on Vercel. `DocStore` also takes a `metadata(path)` hook to supply titles, descriptions and canonical URLs from a build manifest, and `get_doc` accepts a full URL as well as a path. Pass `extraTools` to `createServer`/`createHttpHandler` to add host-specific tools (an API operation index, a coverage matrix, ...) alongside the three built-ins — see [docs/tools.md](docs/tools.md#extending-the-server-with-host-specific-tools). Exports: `DocStore`, `createServer`, `createHttpHandler`, `createDocTools`, `toolResult`, `auditDocs`, `formatAuditReport`.
 
+## SDK v2 migration (next release)
+
+See [the migration notes](docs/migrating-to-sdk-v2.md) for updated public SDK types,
+transport defaults and release/adoption guidance. The proposed next release is 0.3.0;
+the migration is not available in a published package until a release is approved.
+
 ## Development
 
 ```bash
 pnpm typecheck
 pnpm lint
-pnpm test        # node:test via tsx, covers parsing, indexing, audit, MCP over in-memory and HTTP transports
+pnpm test        # builds first; covers parsing, indexing, audit, HTTP, compiled CLI and public types
 pnpm build
 ```
 

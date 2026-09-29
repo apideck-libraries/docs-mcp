@@ -9,7 +9,7 @@
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
-import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js';
+import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
 
 import { createServer } from './server.js';
 import type { DocStore } from './store.js';
@@ -33,7 +33,7 @@ export interface HttpHandlerOptions {
   info?: Record<string, unknown>;
   /** Set to false to skip CORS headers (e.g. when a gateway adds them). Default true. */
   cors?: boolean;
-  transportFactory?: () => StreamableHTTPServerTransport;
+  transportFactory?: () => NodeStreamableHTTPServerTransport;
 }
 
 export type NodeHandler = (req: IncomingMessage, res: ServerResponse) => Promise<void>;
@@ -111,12 +111,12 @@ export const createHttpHandler = (opts: HttpHandlerOptions): NodeHandler => {
       ...(opts.about !== undefined ? { about: opts.about } : {}),
       ...(extraTools.length > 0 ? { extraTools } : {}),
     });
-    const transport = (opts.transportFactory ?? (() => new StreamableHTTPServerTransport({})))();
+    const transport = (opts.transportFactory ?? (() => new NodeStreamableHTTPServerTransport({})))();
     res.on('close', () => {
       void transport.close();
       void server.close();
     });
-    await server.connect(transport as Parameters<typeof server.connect>[0]);
+    await server.connect(transport);
     await transport.handleRequest(req, res, (req as IncomingMessage & { body?: unknown }).body);
   };
 };

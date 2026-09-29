@@ -6,8 +6,7 @@ import type { AddressInfo } from 'node:net';
 import path from 'node:path';
 import { after, before, describe, it } from 'node:test';
 
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
 
 import { DocStore } from '../src/store.js';
 import { createHandler } from './mcp.js';
@@ -22,7 +21,7 @@ describe('Streamable HTTP handler', () => {
     server = http.createServer((req, res) => {
       void handler(req, res);
     });
-    await new Promise<void>((resolve) => server.listen(0, resolve));
+    await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve));
     baseUrl = `http://127.0.0.1:${(server.address() as AddressInfo).port}`;
   });
   after(() => new Promise<void>((resolve) => server.close(() => resolve())));
@@ -45,7 +44,7 @@ describe('Streamable HTTP handler', () => {
   it('serves MCP tool calls to a Streamable HTTP client', async () => {
     const client = new Client({ name: 'http-test', version: '0.0.0' });
     const transport = new StreamableHTTPClientTransport(new URL(`${baseUrl}/mcp`));
-    await client.connect(transport as Parameters<typeof client.connect>[0]);
+    await client.connect(transport);
     try {
       const { tools } = await client.listTools();
       assert.equal(tools.length, 3);

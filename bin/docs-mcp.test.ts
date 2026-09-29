@@ -1,18 +1,19 @@
 // SPDX-License-Identifier: MIT
 
 import assert from 'node:assert/strict';
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
+import { once } from 'node:events';
 import path from 'node:path';
 import { it } from 'node:test';
 import { promisify } from 'node:util';
 
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
+import { Client } from '@modelcontextprotocol/client';
+import { StdioClientTransport } from '@modelcontextprotocol/client/stdio';
 
 const exec = promisify(execFile);
-const cli = path.resolve('bin/docs-mcp.ts');
+const cli = path.resolve('dist/bin/docs-mcp.js');
 const docs = path.resolve('docs');
-const args = ['--import', 'tsx', cli];
+const args = [cli];
 
 it('serves tools and resources through the standalone stdio CLI', { timeout: 15_000 }, async () => {
   const client = new Client({ name: 'cli-test', version: '0.0.0' });
@@ -48,4 +49,38 @@ it('runs standalone search and audit commands', { timeout: 15_000 }, async () =>
   const audit = await exec(process.execPath, [...args, 'audit', '--docs', docs, '--json'], { timeout: 10_000 });
   const report = JSON.parse(audit.stdout) as { summary: { errors: number } };
   assert.equal(report.summary.errors, 0);
+});
+
+it('serves HTTP through the compiled serve command', { timeout: 15_000 }, async () => {
+  // The CLI has no host flag: contain its listener to loopback in this fixture.
+  const child = spawn(process.execPath, [
+    '--import', path.resolve('test/fixtures/loopback-only.mjs'), cli,
+    'serve', '--docs', docs, '--port', '0', '--watch=false',
+  ], { stdio: ['ignore', 'pipe', 'pipe'] });
+  let stderr = '';
+  const client = new Client({ name: 'compiled-serve-test', version: '0' });
+  try {
+    const port = await new Promise<string>((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error(`CLI did not start: ${stderr}`)), 10_000);
+      child.stderr.on('data', (chunk: Buffer) => {
+        stderr += chunk.toString();
+        const match = stderr.match(/FIXTURE_PORT=(\d+)/);
+        if (match?.[1]) { clearTimeout(timer); resolve(match[1]); }
+      });
+      child.once('error', (error) => { clearTimeout(timer); reject(error); });
+      child.once('exit', (code) => { clearTimeout(timer); reject(new Error(`CLI exited ${code}: ${stderr}`)); });
+    });
+    const { StreamableHTTPClientTransport } = await import('@modelcontextprotocol/client');
+    await client.connect(new StreamableHTTPClientTransport(new URL(`http://127.0.0.1:${port}/mcp`)));
+    assert.equal((await client.listTools()).tools.length, 3);
+    const result = await client.callTool({ name: 'get_doc', arguments: { path: 'hosting' } });
+    assert.match(JSON.stringify(result.content), /Vercel/);
+  } finally {
+    await client.close();
+    if (child.exitCode === null && child.signalCode === null) {
+      const exited = once(child, 'exit');
+      child.kill('SIGTERM');
+      await exited;
+    }
+  }
 });

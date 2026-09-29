@@ -15,7 +15,7 @@ import { realpathSync } from 'node:fs';
 import http from 'node:http';
 import { fileURLToPath } from 'node:url';
 
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+import { StdioServerTransport } from '@modelcontextprotocol/server/stdio';
 import { buildApplication, buildCommand, buildRouteMap, numberParser, run } from '@stricli/core';
 
 import { createHandler } from '../api/mcp.js';
