@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 
-import { McpServer, ResourceTemplate } from '@modelcontextprotocol/sdk/server/mcp.js';
+import { McpServer, ResourceTemplate } from '@modelcontextprotocol/server';
+import { z } from 'zod';
 
 import type { DocStore } from './store.js';
 import { createDocTools } from './tools.js';
@@ -47,10 +48,10 @@ export const createServer = (opts: CreateServerOptions): McpServer => {
       {
         title: tool.title,
         description: tool.description,
-        inputSchema: tool.inputSchema,
+        inputSchema: z.object(tool.inputSchema),
         annotations: tool.annotations,
       },
-      tool.handler as never,
+      async (args) => ({ ...(await tool.handler(args)) }),
     );
   }
 

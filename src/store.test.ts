@@ -5,6 +5,7 @@ import { mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { after, before, describe, it } from 'node:test';
+import { setTimeout as delay } from 'node:timers/promises';
 
 import { DocStore, normalizePath, sectionUrl, tokenize } from './store.js';
 
@@ -113,15 +114,25 @@ describe('DocStore reload and watch', () => {
   it('rebuilds automatically while watching', async () => {
     const store = new DocStore({ root: dir });
     await store.load();
-    const reloaded = new Promise<void>((resolve, reject) => {
-      const stop = store.watch((err) => {
-        stop();
+    let stop = () => {};
+    const reloaded = new Promise<boolean>((resolve, reject) => {
+      stop = store.watch((err) => {
         if (err) reject(err);
-        else resolve();
+        else resolve(true);
       }, 50);
     });
-    await writeFile(path.join(dir, 'c.md'), '# Gamma\n\ngamma page about flamingos\n');
-    await reloaded;
+    // Native watchers may not observe a write immediately after registration
+    // (notably macOS). Retry the same change until observed, with a fixed bound.
+    try {
+      let observed = false;
+      for (let attempt = 0; attempt < 20 && !observed; attempt += 1) {
+        await writeFile(path.join(dir, 'c.md'), '# Gamma\n\ngamma page about flamingos\n');
+        observed = await Promise.race([reloaded, delay(100, false)]);
+      }
+      assert.ok(observed, 'watcher did not rebuild within 2 seconds');
+    } finally {
+      stop();
+    }
     assert.equal(store.search('flamingos')[0]?.path, 'c');
   });
 

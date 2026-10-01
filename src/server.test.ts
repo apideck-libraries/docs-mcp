@@ -4,8 +4,8 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import { after, before, describe, it } from 'node:test';
 
-import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
+import { Client } from '@modelcontextprotocol/client';
+import { InMemoryTransport } from '@modelcontextprotocol/server';
 import { z } from 'zod';
 
 import { createServer } from './server.js';
@@ -54,6 +54,13 @@ describe('MCP server over in-memory transport', () => {
   it('search_docs rejects an empty query', async () => {
     const result = await client.callTool({ name: 'search_docs', arguments: { query: '' } });
     assert.equal(result.isError, true);
+  });
+
+  it('reports an unknown tool as a protocol error', async () => {
+    await assert.rejects(
+      client.callTool({ name: 'no_such_tool', arguments: {} }),
+      (error: unknown) => error instanceof Error && 'code' in error && error.code === -32602,
+    );
   });
 
   it('get_doc returns a whole page with header and outline', async () => {
