@@ -1,6 +1,6 @@
 # SDK v2 migration
 
-The next release moves from `@modelcontextprotocol/sdk` to the maintained split
+The prepared 0.3.0 release moves from `@modelcontextprotocol/sdk` to the maintained split
 packages: `@modelcontextprotocol/server` 2.2.0 and `@modelcontextprotocol/node`
 2.1.0. Tests use `@modelcontextprotocol/client` 2.2.0. The package no longer
 installs SDK v1, Express, body-parser or standalone raw-body, including through
@@ -54,7 +54,7 @@ registering it. Validation, defaults and input transforms run before the handler
   the SDK v1 `execution.taskSupport: forbidden` field. Application input constraints
   and successful documentation result shapes remain the same.
 
-These changes warrant a pre-1.0 minor release; **0.3.0 is proposed**, not published
+These changes warrant a pre-1.0 minor release; **0.3.0 is prepared**, not published
 by this change. Both merging and package publication require human approval.
 See the [official SDK migration guide](https://ts.sdk.modelcontextprotocol.io/v2/migration/upgrade-to-v2.html)
 for SDK-level API details.
