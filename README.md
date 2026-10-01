@@ -1,18 +1,36 @@
-# docs-mcp
+# Apideck Docs MCP
 
-An MCP server that lets AI agents search and read your documentation at query time, instead of relying on stale training data. Point it at a folder of Markdown and it exposes `search_docs`, `get_doc` and `list_docs` over stdio (for Claude Code, Cursor, Claude Desktop) and over Streamable HTTP (for a hosted, public endpoint like OpenAI's Docs MCP or the Microsoft Learn MCP Server).
+[Apideck developer docs](https://developers.apideck.com/) · [Sign up](https://www.apideck.com/signup) · [Developer guides](https://developers.apideck.com/guides) · [Changelog](https://developers.apideck.com/changelog)
 
-Published as `@apideck/docs-mcp`. It runs as a standalone CLI, a Vercel function, or as a library inside an existing Node or Next.js site. The `docs/` folder in this repo is both the sample content and the server's own documentation. Start there: [docs/index.md](docs/index.md).
+Coding agents write integration code from what they remember about an API, and that memory goes stale. Apideck Docs MCP lets an agent look up the current docs while it works. Point it at a folder of Markdown and it gives the agent three tools, `search_docs`, `get_doc` and `list_docs`, over stdio for Claude Code, Cursor and Claude Desktop, or over Streamable HTTP for a hosted endpoint.
+
+We run it for the Apideck developer docs at `https://developers.apideck.com/mcp`. Connect your agent there and it can read our accounting guides while it builds, including:
+
+- [Accounts payable automation](https://developers.apideck.com/guides/accounts-payable-automation)
+- [Accounts receivable automation](https://developers.apideck.com/guides/accounts-receivable-automation)
+- [Bank feeds](https://developers.apideck.com/guides/bank-feeds)
+- [Business lending](https://developers.apideck.com/guides/business-lending-accounting-api)
+- [Debt collections](https://developers.apideck.com/guides/debt-collections-accounting-api)
+- [Expense management](https://developers.apideck.com/guides/expense-management-integration)
+- [FP&A: budgeting, forecasting and variance reporting](https://developers.apideck.com/guides/fpa-with-accounting-api)
+- [FX payments and realized gain/loss](https://developers.apideck.com/guides/fx-payments-accounting-api)
+- [Payroll journal entries](https://developers.apideck.com/guides/payroll-journal-entries)
+- [Procurement](https://developers.apideck.com/guides/procurement-accounting-api)
+- [Tax automation](https://developers.apideck.com/guides/tax-automation-accounting-api)
+
+You can install it from npm as `@apideck/docs-mcp`, then run it as a CLI, deploy it as a Vercel function, or mount it inside an existing Node or Next.js site. The `docs/` folder in this repo holds the sample content and the server's own documentation. Start with [docs/index.md](docs/index.md).
 
 ## Quick start
 
 ```bash
 pnpm install
-pnpm audit -- --docs ./docs          # check the docs are complete, current, structured
-pnpm search -- "vercel" --docs ./docs # try the index from the terminal
-pnpm start -- --docs ./docs           # MCP over stdio
-pnpm serve -- --docs ./docs --port 3000   # MCP over HTTP at http://localhost:3000/mcp
+pnpm run audit --docs ./docs               # find broken links, thin pages and stale content
+pnpm run search vercel --docs ./docs       # query the index from your terminal
+pnpm run start --docs ./docs               # MCP over stdio
+pnpm run serve --docs ./docs --port 3000   # MCP over HTTP at http://localhost:3000/mcp
 ```
+
+Keep the `run`: `audit` and `search` are also built-in pnpm commands, so `pnpm audit` runs pnpm's own security audit instead of this one.
 
 Build once (`pnpm build`) and the `docs-mcp` binary in `dist/bin/` runs the same commands without tsx.
 
@@ -75,13 +93,13 @@ export const config = { maxDuration: 60, api: { responseLimit: false } }
 export default (req: NextApiRequest, res: NextApiResponse) => handler(req, res)
 ```
 
-Add `experimental.outputFileTracingIncludes: { '/api/mcp': ['./public/md/**/*'] }` to `next.config` so the markdown ships with the function on Vercel. `DocStore` also takes a `metadata(path)` hook to supply titles, descriptions and canonical URLs from a build manifest, and `get_doc` accepts a full URL as well as a path. Pass `extraTools` to `createServer`/`createHttpHandler` to add host-specific tools (an API operation index, a coverage matrix, ...) alongside the three built-ins — see [docs/tools.md](docs/tools.md#extending-the-server-with-host-specific-tools). Exports: `DocStore`, `createServer`, `createHttpHandler`, `createDocTools`, `toolResult`, `auditDocs`, `formatAuditReport`.
+Add `experimental.outputFileTracingIncludes: { '/api/mcp': ['./public/md/**/*'] }` to `next.config` so the markdown ships with the function on Vercel. `DocStore` also takes a `metadata(path)` hook to supply titles, descriptions and canonical URLs from a build manifest, and `get_doc` accepts a full URL as well as a path. Pass `extraTools` to `createServer`/`createHttpHandler` to add host-specific tools (an API operation index, a coverage matrix, ...) alongside the three built-ins — see [docs/tools.md](docs/tools.md#extending-the-server-with-host-specific-tools). Exports: `DocStore`, `createServer`, `createHttpHandler`, `createDocTools`, `toolResult`, `READ_ONLY`, `auditDocs`, `formatAuditReport`, `createStore`, `resolveConfig`, `normalizePath`, `sectionUrl`, `tokenize`.
 
-## SDK v2 migration (next release)
+## SDK v2 migration (0.3.0)
 
 See [the migration notes](docs/migrating-to-sdk-v2.md) for updated public SDK types,
-transport defaults and release/adoption guidance. The proposed next release is 0.3.0;
-the migration is not available in a published package until a release is approved.
+transport defaults and release/adoption guidance. 0.3.0 is prepared but not yet
+published; until it is, the latest package on npm (0.2.0) still uses SDK v1.
 
 ## Development
 
