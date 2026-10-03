@@ -13,7 +13,7 @@ import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
 
 import { createServer } from './server.js';
 import type { DocStore } from './store.js';
-import type { AnyToolDefinition } from './types.js';
+import type { AnyToolDefinition, ToolCallHook } from './types.js';
 
 export interface HttpHandlerOptions {
   /** Store to serve, or a function returning one (called per request, so it can lazy-load and cache). */
@@ -29,6 +29,11 @@ export interface HttpHandlerOptions {
    * `CreateServerOptions.extraTools`.
    */
   extraTools?: AnyToolDefinition[] | (() => Promise<AnyToolDefinition[]>);
+  /**
+   * Called after every tool call with the tool, arguments, timing, result
+   * count and caller (`X-MCP-Client` header, User-Agent). See `ToolCallHook`.
+   */
+  onToolCall?: ToolCallHook;
   /** Extra fields merged into the GET summary. */
   info?: Record<string, unknown>;
   /** Set to false to skip CORS headers (e.g. when a gateway adds them). Default true. */
@@ -41,7 +46,7 @@ export type NodeHandler = (req: IncomingMessage, res: ServerResponse) => Promise
 const CORS_HEADERS: ReadonlyArray<readonly [string, string]> = [
   ['Access-Control-Allow-Origin', '*'],
   ['Access-Control-Allow-Methods', 'GET, POST, DELETE, OPTIONS'],
-  ['Access-Control-Allow-Headers', 'Content-Type, Accept, Mcp-Session-Id, Mcp-Protocol-Version, Authorization'],
+  ['Access-Control-Allow-Headers', 'Content-Type, Accept, Mcp-Session-Id, Mcp-Protocol-Version, Authorization, X-MCP-Client'],
   ['Access-Control-Expose-Headers', 'Mcp-Session-Id'],
 ];
 
@@ -49,6 +54,20 @@ const json = (res: ServerResponse, status: number, body: unknown): void => {
   res.statusCode = status;
   res.setHeader('Content-Type', 'application/json');
   res.end(JSON.stringify(body));
+};
+
+const header = (req: IncomingMessage, name: string): string | undefined => {
+  const v = req.headers[name];
+  return Array.isArray(v) ? v[0] : v;
+};
+
+const callerOf = (req: IncomingMessage): { client?: string; userAgent?: string } => {
+  const client = header(req, 'x-mcp-client');
+  const userAgent = header(req, 'user-agent');
+  return {
+    ...(client !== undefined ? { client } : {}),
+    ...(userAgent !== undefined ? { userAgent } : {}),
+  };
 };
 
 export const createHttpHandler = (opts: HttpHandlerOptions): NodeHandler => {
@@ -110,6 +129,7 @@ export const createHttpHandler = (opts: HttpHandlerOptions): NodeHandler => {
       ...(opts.version !== undefined ? { version: opts.version } : {}),
       ...(opts.about !== undefined ? { about: opts.about } : {}),
       ...(extraTools.length > 0 ? { extraTools } : {}),
+      ...(opts.onToolCall !== undefined ? { onToolCall: opts.onToolCall, caller: callerOf(req) } : {}),
     });
     const transport = (opts.transportFactory ?? (() => new NodeStreamableHTTPServerTransport({})))();
     res.on('close', () => {

@@ -72,6 +72,21 @@ Shared flags: `--docs`, `--base-url`, `--about`, `--name`. Each falls back to `D
 
 Every page is also an MCP resource at `docs://<path>`. Full reference: [docs/tools.md](docs/tools.md).
 
+## Logging tool calls
+
+Pass `onToolCall` to `createServer` or `createHttpHandler` to get the tool, arguments, timing, result count and caller for every call. `search_docs` calls with `resultCount: 0` are the questions your docs can't answer. The Vercel function logs each call as a JSON line when `DOCS_LOG_TOOL_CALLS=1`. See [docs/tools.md](docs/tools.md#logging-tool-calls).
+
+## WebMCP for browser agents
+
+`@apideck/docs-mcp/webmcp` registers the server's tools, plus `read_current_page`, with `document.modelContext` on your docs site, so browser agents call tools instead of scraping:
+
+```ts
+import { registerDocsTools } from '@apideck/docs-mcp/webmcp'
+registerDocsTools({ endpoint: '/mcp' })
+```
+
+It does nothing in browsers without WebMCP (currently Chrome 149+ behind a flag or origin trial). See [docs/webmcp.md](docs/webmcp.md).
+
 ## Hosting on Vercel
 
 `api/mcp.ts` is a stateless Streamable HTTP function; `vercel.json` rewrites `/mcp` to it and bundles `docs/**` with the function. Set `DOCS_BASE_URL` and `DOCS_ABOUT` in the project environment and deploy. Details in [docs/hosting.md](docs/hosting.md).
@@ -93,7 +108,7 @@ export const config = { maxDuration: 60, api: { responseLimit: false } }
 export default (req: NextApiRequest, res: NextApiResponse) => handler(req, res)
 ```
 
-Add `experimental.outputFileTracingIncludes: { '/api/mcp': ['./public/md/**/*'] }` to `next.config` so the markdown ships with the function on Vercel. `DocStore` also takes a `metadata(path)` hook to supply titles, descriptions and canonical URLs from a build manifest, and `get_doc` accepts a full URL as well as a path. Pass `extraTools` to `createServer`/`createHttpHandler` to add host-specific tools (an API operation index, a coverage matrix, ...) alongside the three built-ins — see [docs/tools.md](docs/tools.md#extending-the-server-with-host-specific-tools). Exports: `DocStore`, `createServer`, `createHttpHandler`, `createDocTools`, `toolResult`, `READ_ONLY`, `auditDocs`, `formatAuditReport`, `createStore`, `resolveConfig`, `normalizePath`, `sectionUrl`, `tokenize`.
+Add `experimental.outputFileTracingIncludes: { '/api/mcp': ['./public/md/**/*'] }` to `next.config` so the markdown ships with the function on Vercel. `DocStore` also takes a `metadata(path)` hook to supply titles, descriptions and canonical URLs from a build manifest, and `get_doc` accepts a full URL as well as a path. Pass `extraTools` to `createServer`/`createHttpHandler` to add host-specific tools (an API operation index, a coverage matrix, ...) alongside the three built-ins — see [docs/tools.md](docs/tools.md#extending-the-server-with-host-specific-tools). Exports: `DocStore`, `createServer`, `createHttpHandler`, `createDocTools`, `toolResult`, `READ_ONLY`, `auditDocs`, `formatAuditReport`, `createStore`, `resolveConfig`, `normalizePath`, `sectionUrl`, `tokenize`; `registerDocsTools` from `@apideck/docs-mcp/webmcp`.
 
 ## SDK v2 migration (0.3.0)
 
