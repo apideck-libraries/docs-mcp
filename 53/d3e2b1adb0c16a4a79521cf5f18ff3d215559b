@@ -5,10 +5,12 @@ docs/index.md
   s_bca14c475b07c0::t_4a14d58604b815 4,19-20
 README.md
   s_bca14c475b07c0::t_4a14d58604b815 75-89
+  s_bca14c475b07c0::t_845214b342ed63 111
 src/http.ts
   s_bca14c475b07c0::t_c8f909d37eb87d 16,32-36,49,59-72,132
 src/server.ts
   s_bca14c475b07c0::t_c8f909d37eb87d 8,23-26,42-92
+  s_bca14c475b07c0::t_ae49fcd3f26c0e 101,110
 src/webmcp.ts
   s_bca14c475b07c0::t_d6cc92dd45c20a 1-74,82-85,87-166
   s_bca14c475b07c0::t_3c520de3b74066 75-81,86
@@ -27,6 +29,7 @@ api/mcp.ts
   s_bca14c475b07c0::t_3f766a51a61493 6-7,14,42-44
 package.json
   s_bca14c475b07c0::t_cc300b8d9bd313 29-32
+  s_bca14c475b07c0::t_262b03761fcabb 3
 ---
 {
   "schema_version": "authorship/3.0.0",
