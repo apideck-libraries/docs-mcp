@@ -11,4 +11,14 @@ export { auditDocs, formatAuditReport } from './audit.js';
 export type { AuditIssue, AuditOptions, AuditReport, Severity } from './audit.js';
 export { createStore, resolveConfig } from './config.js';
 export type { DocsConfig } from './config.js';
-export type { AnyToolDefinition, DocPage, DocSection, SearchHit, ToolAnnotations, ToolDefinition, ToolResult } from './types.js';
+export type {
+  AnyToolDefinition,
+  DocPage,
+  DocSection,
+  SearchHit,
+  ToolAnnotations,
+  ToolCallEvent,
+  ToolCallHook,
+  ToolDefinition,
+  ToolResult,
+} from './types.js';

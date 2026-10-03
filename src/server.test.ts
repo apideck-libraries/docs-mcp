@@ -11,7 +11,7 @@ import { z } from 'zod';
 import { createServer } from './server.js';
 import { DocStore } from './store.js';
 import { toolResult } from './tools.js';
-import type { AnyToolDefinition } from './types.js';
+import type { AnyToolDefinition, ToolCallEvent } from './types.js';
 
 const textOf = (result: unknown): string => {
   const content = (result as { content?: Array<{ type: string; text?: string }> }).content;
@@ -156,5 +156,27 @@ describe('MCP server with host-defined extraTools', () => {
     const result = await client.callTool({ name: 'echo_thing', arguments: { value: 'hi' } });
     assert.equal(textOf(result), 'echo: hi');
     await client.close();
+  });
+});
+
+describe('onToolCall over in-memory transport', () => {
+  it('reports the client name from the initialize handshake', async () => {
+    const store = new DocStore({ root: path.resolve('docs') });
+    await store.load();
+    const events: ToolCallEvent[] = [];
+    const server = createServer({ store, onToolCall: (e) => void events.push(e) });
+    const client = new Client({ name: 'claude-code', version: '1.0.0' });
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+    try {
+      await client.callTool({ name: 'list_docs', arguments: { path_prefix: 'nothing-here' } });
+      assert.equal(events.length, 1);
+      assert.equal(events[0]?.client, 'claude-code');
+      assert.equal(events[0]?.resultCount, 0);
+      assert.equal(events[0]?.userAgent, undefined);
+    } finally {
+      await client.close();
+    }
   });
 });

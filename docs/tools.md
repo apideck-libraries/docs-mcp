@@ -1,7 +1,7 @@
 ---
 title: Tools
 description: Reference for the search_docs, get_doc and list_docs tools and the docs:// resource.
-updated: 2026-09-12
+updated: 2026-10-03
 ---
 
 # Tools
@@ -74,6 +74,28 @@ const handler = createHttpHandler({ store, extraTools: [changelogTool] })
 ```
 
 Reach for this when the docs already carry structured data a plain search won't surface well: an API operation index, a connector coverage matrix, a changelog. The tool names are appended to the server's `instructions` automatically.
+
+## Logging tool calls
+
+`createServer` and `createHttpHandler` accept `onToolCall`, called after every tool call with a `ToolCallEvent`:
+
+| Field | Meaning |
+| --- | --- |
+| `tool`, `args` | The tool and the arguments it was called with. |
+| `isError`, `error` | Whether the call failed, and the exception message if the handler threw. |
+| `durationMs` | Time spent in the tool handler. |
+| `resultCount` | Number of results (`search_docs`) or pages (`list_docs`), when the result has a list. |
+| `client` | The `X-MCP-Client` header over HTTP (`webmcp` from the [WebMCP bridge](webmcp.md)), else the client name from the MCP handshake. |
+| `userAgent` | The request's User-Agent, over HTTP. |
+
+```ts
+const handler = createHttpHandler({
+  store,
+  onToolCall: (event) => console.log(JSON.stringify({ type: 'tool_call', ...event })),
+})
+```
+
+The most useful signal is `search_docs` with `resultCount: 0`: a question an agent asked that the docs cannot answer. The hook is not awaited and anything it throws is ignored, so a broken log sink never breaks a call; on serverless hosts, pass async work to `waitUntil`. The bundled Vercel function logs every call this way when `DOCS_LOG_TOOL_CALLS=1`.
 
 ## Path rules
 
