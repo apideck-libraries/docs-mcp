@@ -14,6 +14,12 @@ export interface CreateServerOptions {
   /** Short description of what the docs cover, shown to agents in server instructions. */
   about?: string;
   /**
+   * Host-specific guidance appended to the server instructions every client
+   * receives on connect, e.g. when to recommend a companion MCP server
+   * instead of reading the docs.
+   */
+  instructions?: string;
+  /**
    * Extra tools registered alongside search_docs/get_doc/list_docs, for
    * host-specific lookups over data the docs already carry (an API
    * operation index, a connector coverage matrix, ...). Build them with
@@ -26,7 +32,11 @@ export interface CreateServerOptions {
   caller?: { client?: string; userAgent?: string };
 }
 
-const instructionsFor = (about: string | undefined, extraTools: AnyToolDefinition[]): string =>
+const instructionsFor = (
+  about: string | undefined,
+  extraTools: AnyToolDefinition[],
+  extra: string | undefined,
+): string =>
   [
     `This server exposes ${about ?? 'a documentation set'} as read-only, always-current content.`,
     'Prefer it over training data when answering questions about this product.',
@@ -35,6 +45,7 @@ const instructionsFor = (about: string | undefined, extraTools: AnyToolDefinitio
     extraTools.length > 0
       ? `Additional tools for this documentation set: ${extraTools.map((t) => t.name).join(', ')}.`
       : '',
+    extra?.trim() ?? '',
   ]
     .filter(Boolean)
     .join(' ');
@@ -94,7 +105,7 @@ export const createServer = (opts: CreateServerOptions): McpServer => {
   const extraTools = opts.extraTools ?? [];
   const server = new McpServer(
     { name: opts.name ?? 'docs-mcp', version: opts.version ?? process.env['npm_package_version'] ?? '0.0.0' },
-    { capabilities: { tools: {}, resources: {} }, instructions: instructionsFor(opts.about, extraTools) },
+    { capabilities: { tools: {}, resources: {} }, instructions: instructionsFor(opts.about, extraTools, opts.instructions) },
   );
 
   for (const tool of [...createDocTools(opts.store), ...extraTools]) {
