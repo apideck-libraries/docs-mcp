@@ -1,7 +1,7 @@
 ---
 title: docs-mcp
 description: An MCP server that lets AI agents search and read your documentation at query time instead of relying on stale training data.
-updated: 2026-09-12
+updated: 2026-10-03
 ---
 
 # docs-mcp
@@ -16,6 +16,8 @@ docs-mcp turns a folder of Markdown into a read-only [Model Context Protocol](ht
 - Re-indexes automatically when files change, so answers reflect what is on disk right now.
 - Ships an `audit` command that checks the docs are complete, current and structured before you expose them. See [Auditing your docs](auditing.md).
 - Runs over stdio for local editors and over Streamable HTTP for a hosted, public endpoint. See [Hosting](hosting.md).
+- Registers the same tools with browser agents on your docs site through [WebMCP](webmcp.md).
+- Reports every tool call to an `onToolCall` hook, so you can see which questions the docs can't answer. See [Logging tool calls](tools.md#logging-tool-calls).
 
 ## When to use MCP versus a skill file
 

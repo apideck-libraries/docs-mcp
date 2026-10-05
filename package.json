@@ -1,6 +1,6 @@
 {
   "name": "@apideck/docs-mcp",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "MCP server that lets agents search and retrieve your documentation at query time instead of relying on stale training data.",
   "keywords": [
     "mcp",
@@ -25,6 +25,10 @@
     ".": {
       "types": "./dist/src/index.d.ts",
       "import": "./dist/src/index.js"
+    },
+    "./webmcp": {
+      "types": "./dist/src/webmcp.d.ts",
+      "import": "./dist/src/webmcp.js"
     },
     "./package.json": "./package.json"
   },
