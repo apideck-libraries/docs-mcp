@@ -22,6 +22,8 @@ export interface HttpHandlerOptions {
   version?: string;
   /** One-line description of what the docs cover, shown to agents and in the GET summary. */
   about?: string;
+  /** Host-specific guidance appended to the server instructions. See `CreateServerOptions.instructions`. */
+  instructions?: string;
   /**
    * Extra tools registered alongside search_docs/get_doc/list_docs, or a
    * function returning them (called per request, so it can depend on the
@@ -128,6 +130,7 @@ export const createHttpHandler = (opts: HttpHandlerOptions): NodeHandler => {
       ...(opts.name !== undefined ? { name: opts.name } : {}),
       ...(opts.version !== undefined ? { version: opts.version } : {}),
       ...(opts.about !== undefined ? { about: opts.about } : {}),
+      ...(opts.instructions !== undefined ? { instructions: opts.instructions } : {}),
       ...(extraTools.length > 0 ? { extraTools } : {}),
       ...(opts.onToolCall !== undefined ? { onToolCall: opts.onToolCall, caller: callerOf(req) } : {}),
     });

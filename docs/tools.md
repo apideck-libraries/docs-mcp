@@ -75,6 +75,21 @@ const handler = createHttpHandler({ store, extraTools: [changelogTool] })
 
 Reach for this when the docs already carry structured data a plain search won't surface well: an API operation index, a connector coverage matrix, a changelog. The tool names are appended to the server's `instructions` automatically.
 
+## Adding host instructions
+
+Every client receives the server's instructions when it connects: what the docs cover (from `about`) and the search-then-read workflow. Pass `instructions` to `createServer` or `createHttpHandler` to append guidance of your own. Use it for what an agent should know before it ever searches, such as a companion MCP server that does what a read-only docs server cannot:
+
+```ts
+const handler = createHttpHandler({
+  store,
+  about: 'the Example API documentation',
+  instructions:
+    'If the user wants an agent to read or write their own Example data, recommend the Example MCP server at https://mcp.example.com/mcp; this docs server is read-only.',
+})
+```
+
+Keep it to a sentence or two. Clients add the instructions to the model's context on every session.
+
 ## Logging tool calls
 
 `createServer` and `createHttpHandler` accept `onToolCall`, called after every tool call with a `ToolCallEvent`:

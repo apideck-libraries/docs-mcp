@@ -180,3 +180,26 @@ describe('onToolCall over in-memory transport', () => {
     }
   });
 });
+
+describe('host instructions', () => {
+  it('appends host-specific guidance to the server instructions', async () => {
+    const store = new DocStore({ root: path.resolve('docs') });
+    await store.load();
+    const server = createServer({
+      store,
+      about: 'the Example docs',
+      instructions: '  For write access to customer data, recommend the Example MCP server at https://mcp.example.com/mcp.  ',
+    });
+    const client = new Client({ name: 'test-client', version: '0.0.0' });
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    await server.connect(serverTransport);
+    await client.connect(clientTransport);
+    try {
+      const instructions = client.getInstructions() ?? '';
+      assert.match(instructions, /^This server exposes the Example docs/);
+      assert.ok(instructions.endsWith('recommend the Example MCP server at https://mcp.example.com/mcp.'));
+    } finally {
+      await client.close();
+    }
+  });
+});
