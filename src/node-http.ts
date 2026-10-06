@@ -8,6 +8,14 @@ import type { AuthInfo, Transport, WebStandardStreamableHTTPServerTransportOptio
 
 /** Structural contract: existing SDK Node transport factories remain compatible. */
 export interface NodeHttpTransport extends Transport {
+  readonly sessionId: WebStandardStreamableHTTPServerTransport['sessionId'];
+  onclose: WebStandardStreamableHTTPServerTransport['onclose'];
+  onerror: WebStandardStreamableHTTPServerTransport['onerror'];
+  onmessage: WebStandardStreamableHTTPServerTransport['onmessage'];
+  setSupportedProtocolVersions: WebStandardStreamableHTTPServerTransport['setSupportedProtocolVersions'];
+  setScopeChallengeResolver: WebStandardStreamableHTTPServerTransport['setScopeChallengeResolver'];
+  closeSSEStream: WebStandardStreamableHTTPServerTransport['closeSSEStream'];
+  closeStandaloneSSEStream: WebStandardStreamableHTTPServerTransport['closeStandaloneSSEStream'];
   handleRequest(req: IncomingMessage & { auth?: AuthInfo }, res: ServerResponse, parsedBody?: unknown): Promise<void>;
 }
 

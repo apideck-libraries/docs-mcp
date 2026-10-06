@@ -75,12 +75,16 @@ import type { HttpHandlerOptions, NodeHttpTransport } from '@apideck/docs-mcp';
 const store = new DocStore({ root: './docs' });
 const original: HttpHandlerOptions = { store, transportFactory: () => new SdkNodeTransport({ enableJsonResponse: true }) };
 const owned: NodeHttpTransport = new NodeStreamableHTTPServerTransport({ enableJsonResponse: true });
+const ownedOptions: HttpHandlerOptions = { store, transportFactory: () => owned };
+const originalResult: Pick<SdkNodeTransport, keyof SdkNodeTransport> = original.transportFactory!();
+const ownedResult: Pick<SdkNodeTransport, keyof SdkNodeTransport> = ownedOptions.transportFactory!();
 createHttpHandler(original);
-createHttpHandler({ store, transportFactory: () => owned });
+createHttpHandler(ownedOptions);
+void [originalResult, ownedResult];
 `);
   await writeFile(path.join(compatibility, 'tsconfig.json'), JSON.stringify({ compilerOptions: { strict: true, exactOptionalPropertyTypes: true, noEmit: true, module: 'NodeNext', moduleResolution: 'NodeNext', target: 'ES2022', skipLibCheck: true }, include: ['*.ts'] }));
   await run(process.execPath, ['node_modules/typescript/bin/tsc', '-p', 'tsconfig.json'], compatibility, 'factory-typecheck.log');
-  const result = { version: installed.version, tarball, adapters: [...new Set(adapters)], hono: [...new Set(honos)], sdkNodeRuntime: sdkNodes, consumerOverrides: false, runtimeTests, originalFactoryTypecheck: 'passed' };
+  const result = { version: installed.version, tarball, adapters: [...new Set(adapters)], hono: [...new Set(honos)], sdkNodeRuntime: sdkNodes, consumerOverrides: false, runtimeTests, originalFactoryTypecheck: 'passed', factoryReturnTypecheck: 'passed' };
   await writeFile(path.join(root, 'result.json'), JSON.stringify(result, null, 2));
   console.log(JSON.stringify(result, null, 2));
 } finally {
