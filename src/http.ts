@@ -9,8 +9,8 @@
 
 import type { IncomingMessage, ServerResponse } from 'node:http';
 
-import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
-
+import { NodeStreamableHTTPServerTransport } from './node-http.js';
+import type { NodeHttpTransport } from './node-http.js';
 import { createServer } from './server.js';
 import type { DocStore } from './store.js';
 import type { AnyToolDefinition, ToolCallHook } from './types.js';
@@ -40,7 +40,7 @@ export interface HttpHandlerOptions {
   info?: Record<string, unknown>;
   /** Set to false to skip CORS headers (e.g. when a gateway adds them). Default true. */
   cors?: boolean;
-  transportFactory?: () => NodeStreamableHTTPServerTransport;
+  transportFactory?: () => NodeHttpTransport;
 }
 
 export type NodeHandler = (req: IncomingMessage, res: ServerResponse) => Promise<void>;

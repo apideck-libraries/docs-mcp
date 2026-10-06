@@ -1,8 +1,10 @@
 # SDK v2 migration
 
-The prepared 0.3.0 release moves from `@modelcontextprotocol/sdk` to the maintained split
-packages: `@modelcontextprotocol/server` 2.2.0 and `@modelcontextprotocol/node`
-2.1.0. Tests use `@modelcontextprotocol/client` 2.2.0. The package no longer
+The published 0.3.0 release moved from `@modelcontextprotocol/sdk` to the maintained split
+SDK v2. The prepared 0.4.1 release keeps `@modelcontextprotocol/server` 2.2.0
+and provides a library-owned Node bridge using a directly declared patched
+Hono adapter. See [the transport and release notes](http-transport-security.md).
+Tests use `@modelcontextprotocol/client` 2.2.0. The package no longer
 installs SDK v1, Express, body-parser or standalone raw-body, including through
 its development dependencies. Existing Zod and other unrelated resolutions stay
 unchanged.
@@ -19,8 +21,7 @@ Callers using SDK classes directly need to update imports and types:
 
 ```ts
 import type { McpServer } from '@modelcontextprotocol/server';
-import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
-import { createServer, createHttpHandler, DocStore } from '@apideck/docs-mcp';
+import { NodeStreamableHTTPServerTransport, createServer, createHttpHandler, DocStore } from '@apideck/docs-mcp';
 
 const store = new DocStore({ root: './docs' });
 const server: McpServer = createServer({ store });
@@ -33,7 +34,9 @@ const handler = createHttpHandler({
 `createServer` now returns the v2 `McpServer`. Its public members differ from SDK
 v1; old `tool`, `resource`, `prompt` helpers and experimental APIs are not a
 compatibility surface. Use the v2 registration APIs. `transportFactory` now
-returns `NodeStreamableHTTPServerTransport`. V1 class annotations/factories are
+accepts the structural `NodeHttpTransport` contract, including the exported
+`NodeStreamableHTTPServerTransport` and explicitly installed SDK v2 Node
+transports. V1 class annotations/factories are
 not assignable to these types. No v1 dependency or compatibility shim is retained.
 Custom tools still take a raw Zod shape; docs-mcp wraps it as a Zod object when
 registering it. Validation, defaults and input transforms run before the handler.
@@ -54,8 +57,9 @@ registering it. Validation, defaults and input transforms run before the handler
   the SDK v1 `execution.taskSupport: forbidden` field. Application input constraints
   and successful documentation result shapes remain the same.
 
-These changes warrant a pre-1.0 minor release; **0.3.0 is prepared**, not published
-by this change. Both merging and package publication require human approval.
+The SDK migration shipped in the pre-1.0 minor **0.3.0** release. The current
+**0.4.1** transport remediation is prepared for human review and publication.
+Both merging and package publication require human approval.
 See the [official SDK migration guide](https://ts.sdk.modelcontextprotocol.io/v2/migration/upgrade-to-v2.html)
 for SDK-level API details.
 
