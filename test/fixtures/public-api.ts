@@ -1,7 +1,6 @@
 import { z } from 'zod';
-import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
 import type { McpServer } from '@modelcontextprotocol/server';
-import { DocStore, createServer, createHttpHandler, createDocTools, toolResult, READ_ONLY, auditDocs, formatAuditReport, resolveConfig, createStore, normalizePath, sectionUrl, tokenize } from '@apideck/docs-mcp';
+import { NodeStreamableHTTPServerTransport, DocStore, createServer, createHttpHandler, createDocTools, toolResult, READ_ONLY, auditDocs, formatAuditReport, resolveConfig, createStore, normalizePath, sectionUrl, tokenize } from '@apideck/docs-mcp';
 import type { AnyToolDefinition, ToolDefinition, ToolResult, ToolAnnotations, DocStoreOptions, PageMetadata, SearchOptions, StoreStats, DocPage, DocSection, SearchHit, CreateServerOptions, HttpHandlerOptions, NodeHandler, AuditIssue, AuditOptions, AuditReport, Severity, DocsConfig } from '@apideck/docs-mcp';
 const metadata: PageMetadata = { title: 'Title', url: 'https://example.test/ref#op' };
 const options: DocStoreOptions = { root: '../fixtures/docs', metadata: () => metadata };

@@ -18,6 +18,7 @@ it('publishes declarations usable by custom tools and the current SDK transport'
 it('keeps SDK v1 and its parser chain out of the entire lockfile, including development dependencies', async () => {
   const lock = yaml.load(await readFile('pnpm-lock.yaml', 'utf8')) as { packages: Record<string, unknown> };
   assert.ok(Object.keys(lock.packages).length > 0);
-  const forbidden = /^(?:@modelcontextprotocol\/(?:sdk|server-legacy)|raw-body|express|body-parser)@/;
+  const forbidden = /^(?:@modelcontextprotocol\/(?:sdk|server-legacy|node)|raw-body|express|body-parser)@/;
   assert.deepEqual(Object.keys(lock.packages).filter((name) => forbidden.test(name)), []);
+  assert.deepEqual(Object.keys(lock.packages).filter((name) => name.startsWith('@hono/node-server@')), ['@hono/node-server@2.1.3']);
 });

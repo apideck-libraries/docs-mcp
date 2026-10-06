@@ -113,8 +113,9 @@ Add `experimental.outputFileTracingIncludes: { '/api/mcp': ['./public/md/**/*'] 
 ## SDK v2 migration (0.3.0)
 
 See [the migration notes](docs/migrating-to-sdk-v2.md) for updated public SDK types,
-transport defaults and release/adoption guidance. 0.3.0 is prepared but not yet
-published; until it is, the latest package on npm (0.2.0) still uses SDK v1.
+transport defaults and release/adoption guidance. SDK v2 shipped in 0.3.0.
+The prepared 0.4.1 [HTTP transport remediation](docs/http-transport-security.md)
+declares the patched Node adapter directly so clean consumers inherit it.
 
 ## Development
 
@@ -122,6 +123,7 @@ published; until it is, the latest package on npm (0.2.0) still uses SDK v1.
 pnpm typecheck
 pnpm lint
 pnpm test        # builds first; covers parsing, indexing, audit, HTTP, compiled CLI and public types
+pnpm test:package # packs and verifies a clean installed consumer without overrides
 pnpm build
 ```
 

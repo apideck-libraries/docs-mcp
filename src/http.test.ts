@@ -7,10 +7,10 @@ import path from 'node:path';
 import { after, before, describe, it } from 'node:test';
 
 import { Client, StreamableHTTPClientTransport } from '@modelcontextprotocol/client';
-import { NodeStreamableHTTPServerTransport } from '@modelcontextprotocol/node';
 import { z } from 'zod';
 
 import { createHttpHandler } from './http.js';
+import { NodeStreamableHTTPServerTransport } from './node-http.js';
 import { DocStore } from './store.js';
 import { toolResult } from './tools.js';
 import type { ToolDefinition } from './types.js';

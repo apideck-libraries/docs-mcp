@@ -6,6 +6,8 @@ export { createServer } from './server.js';
 export type { CreateServerOptions } from './server.js';
 export { createHttpHandler } from './http.js';
 export type { HttpHandlerOptions, NodeHandler } from './http.js';
+export { NodeStreamableHTTPServerTransport } from './node-http.js';
+export type { NodeHttpTransport, NodeStreamableHTTPServerTransportOptions } from './node-http.js';
 export { createDocTools, READ_ONLY, toolResult } from './tools.js';
 export { auditDocs, formatAuditReport } from './audit.js';
 export type { AuditIssue, AuditOptions, AuditReport, Severity } from './audit.js';
