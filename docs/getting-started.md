@@ -8,12 +8,15 @@ updated: 2026-09-12
 
 ## Requirements
 
-- Node.js 20 or newer.
+- Node.js 24.22.1.
 - A directory of Markdown files. Frontmatter is optional but recommended; see [Writing docs that search well](auditing.md#writing-docs-that-search-well).
 
 ## Install
 
 From the repository:
+
+Use Node.js **24.22.1**, pinned in `.nvmrc` (`n auto` or `nvm use`), and pnpm
+**9.15.4**.
 
 ```bash
 pnpm install

@@ -20,6 +20,14 @@ The MCP endpoint is `http://localhost:3000/mcp`. A `GET` on the same path return
 
 The repository includes `api/mcp.ts` and a `vercel.json` that rewrites `/mcp` to it. The function is stateless: each request creates a fresh MCP server over a shared, in-memory index that is built once per function instance.
 
+[Vercel selects only a Node.js major version](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions)
+and controls minor and patch updates. The package's `engines.node: 24.22.1`
+selects the **24.x** major on Vercel; `.nvmrc` does not pin
+the managed build or function runtime to **24.22.1**. Verify `node --version`
+in build logs and `process.version` in function logs when checking the provider's
+security rollout. For self-managed builds and hosting, use **24.22.1** from
+`.nvmrc`.
+
 1. Set `DOCS_DIR` (defaults to `docs`), `DOCS_BASE_URL`, `DOCS_ABOUT` and optionally `DOCS_NAME` as environment variables.
 2. Keep the docs folder inside the repository; `vercel.json` lists it under `includeFiles` so it ships with the function.
 3. Deploy with `vercel deploy --prod`.
