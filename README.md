@@ -22,6 +22,8 @@ You can install it from npm as `@apideck/docs-mcp`, then run it as a CLI, deploy
 
 ## Quick start
 
+Use Node.js **24.22.1** from `.nvmrc` (`n auto` or `nvm use`) and pnpm **9.15.4** when working from this repository.
+
 ```bash
 pnpm install
 pnpm run audit --docs ./docs               # find broken links, thin pages and stale content
@@ -118,6 +120,10 @@ The prepared 0.4.1 [HTTP transport remediation](docs/http-transport-security.md)
 declares the patched Node adapter directly so clean consumers inherit it.
 
 ## Development
+
+Development, Node 24 CI and release builds use **24.22.1**, the
+[security release fixing CVE-2026-111497](https://nodejs.org/en/blog/release/v24.22.1/).
+The package also requires exactly **24.22.1** through `engines.node`.
 
 ```bash
 pnpm typecheck
